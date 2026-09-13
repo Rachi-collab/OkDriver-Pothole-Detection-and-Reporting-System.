@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { AlertTriangle, CheckCircle, Clock, RefreshCw } from 'lucide-react'
-import { getStats, listPotholes } from '../api/potholes'
+import { AlertTriangle, CheckCircle, Clock, Download, RefreshCw } from 'lucide-react'
+import { getExportCsvUrl, getStats, listPotholes } from '../api/potholes'
 import SeverityBadge from '../components/SeverityBadge'
 import StatusBadge from '../components/StatusBadge'
 import { formatDistanceToNow } from 'date-fns'
@@ -50,12 +50,21 @@ export default function Dashboard() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold text-gray-900">Pothole Dashboard</h1>
-        <button
-          onClick={fetchData}
-          className="flex items-center gap-1 text-sm text-gray-500 hover:text-gray-900 transition"
-        >
-          <RefreshCw className="w-4 h-4" /> Refresh
-        </button>
+        <div className="flex items-center gap-2">
+          <a
+            href={getExportCsvUrl(filters)}
+            download="potholes_report.csv"
+            className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition shadow-sm"
+          >
+            <Download className="w-4 h-4 text-gray-500" /> Export CSV
+          </a>
+          <button
+            onClick={fetchData}
+            className="flex items-center gap-1.5 text-sm text-gray-600 hover:text-gray-900 transition px-3 py-1.5 border border-gray-300 rounded-lg bg-white shadow-sm"
+          >
+            <RefreshCw className="w-4 h-4" /> Refresh
+          </button>
+        </div>
       </div>
 
       {/* Stat cards */}

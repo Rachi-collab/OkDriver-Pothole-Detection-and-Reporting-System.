@@ -16,3 +16,11 @@ export const updatePothole = (id, data) =>
 
 export const getStats = () =>
   client.get('/potholes/stats')
+
+export const getExportCsvUrl = (params = {}) => {
+  const query = new URLSearchParams(
+    Object.fromEntries(Object.entries(params).filter(([, v]) => v))
+  ).toString()
+  return `/api/potholes/export/csv${query ? '?' + query : ''}`
+}
+

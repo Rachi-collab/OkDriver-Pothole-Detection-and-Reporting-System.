@@ -149,6 +149,54 @@ def get_stats(db: Session = Depends(get_db)):
     return {"total": total, "by_status": by_status, "by_severity": by_severity}
 
 
+@router.get("/export/csv")
+def export_csv(
+    status: Optional[Status] = Query(None),
+    severity: Optional[Severity] = Query(None),
+    zone: Optional[str] = Query(None),
+    db: Session = Depends(get_db),
+):
+    """Export potholes matching optional filters as a downloadable CSV file."""
+    import csv
+    import io
+    from fastapi.responses import StreamingResponse
+
+    q = db.query(Pothole)
+    if status:
+        q = q.filter(Pothole.status == status)
+    if severity:
+        q = q.filter(Pothole.severity == severity)
+    if zone:
+        q = q.filter(Pothole.zone.ilike(f"%{zone}%"))
+
+    potholes = q.order_by(Pothole.reported_at.desc()).all()
+
+    output = io.StringIO()
+    writer = csv.writer(output)
+    writer.writerow([
+        "ID", "Latitude", "Longitude", "Address", "Zone",
+        "Severity", "Status", "Confidence", "Authority Name", "Authority Email", "Reported At"
+    ])
+
+    for p in potholes:
+        writer.writerow([
+            p.id, p.latitude, p.longitude, p.address or "", p.zone or "",
+            p.severity.value if hasattr(p.severity, "value") else str(p.severity),
+            p.status.value if hasattr(p.status, "value") else str(p.status),
+            f"{p.confidence:.2f}" if p.confidence is not None else "",
+            p.authority_name or "", p.authority_email or "",
+            p.reported_at.isoformat() if p.reported_at else ""
+        ])
+
+    output.seek(0)
+    return StreamingResponse(
+        io.BytesIO(output.getvalue().encode("utf-8")),
+        media_type="text/csv",
+        headers={"Content-Disposition": 'attachment; filename="potholes_report.csv"'},
+    )
+
+
+
 @router.get("/{pothole_id}", response_model=PotholeRead)
 def get_pothole(pothole_id: int, db: Session = Depends(get_db)):
     pothole = db.get(Pothole, pothole_id)
