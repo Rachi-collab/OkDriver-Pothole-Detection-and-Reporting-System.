@@ -15,9 +15,7 @@ from app.core.config import settings
 from app.core.database import get_db
 from app.models.pothole import Pothole, Severity, Status
 from app.schemas.pothole import DetectionResponse, PotholeCreate, PotholeRead, PotholeUpdate
-from app.services.authority_mapper import get_authority, reverse_geocode
-from app.services.detector import run_detection
-from app.services.email_service import send_report_email
+from app.services import get_authority, reverse_geocode, run_detection, send_report_email
 
 router = APIRouter(prefix="/api/potholes", tags=["potholes"])
 
