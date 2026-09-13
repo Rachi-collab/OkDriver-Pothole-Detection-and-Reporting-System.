@@ -11,7 +11,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
-from app.api.potholes import router as potholes_router
+from app.api import potholes_router
 from app.core.config import settings
 from app.core.database import Base, engine
 
