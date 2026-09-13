@@ -15,7 +15,7 @@ from app.core.config import settings
 from app.core.database import get_db
 from app.models.pothole import Pothole, Severity, Status
 from app.schemas.pothole import DetectionResponse, PotholeCreate, PotholeRead, PotholeUpdate
-from app.services.authority_mapper import get_authority
+from app.services.authority_mapper import get_authority, reverse_geocode
 from app.services.detector import run_detection
 from app.services.email_service import send_report_email
 
@@ -81,11 +81,14 @@ async def detect_pothole(
     # Map to civic authority
     authority = get_authority(latitude, longitude)
 
+    # Reverse geocode address if not provided
+    resolved_address = address or reverse_geocode(latitude, longitude)
+
     # Persist record
     pothole = Pothole(
         latitude=latitude,
         longitude=longitude,
-        address=address,
+        address=resolved_address,
         zone=authority.zone,
         severity=detection["severity"],
         confidence=detection["confidence"],

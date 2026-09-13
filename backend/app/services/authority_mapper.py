@@ -6,8 +6,13 @@ Here we use a simple bounding-box lookup that covers Delhi's major zones
 and falls back gracefully for other cities.
 """
 
+import logging
 from dataclasses import dataclass
 from typing import Optional
+
+import httpx
+
+logger = logging.getLogger(__name__)
 
 
 @dataclass
@@ -58,3 +63,23 @@ def get_authority(lat: float, lon: float) -> Authority:
 
 def get_zone_name(lat: float, lon: float) -> str:
     return get_authority(lat, lon).zone
+
+
+def reverse_geocode(lat: float, lon: float) -> Optional[str]:
+    """
+    Reverse geocode coordinates using OpenStreetMap's Nominatim API.
+    Returns display address string or None if unresolvable.
+    """
+    url = "https://nominatim.openstreetmap.org/reverse"
+    params = {"lat": lat, "lon": lon, "format": "json"}
+    headers = {"User-Agent": "OkDriver-PotholeApp/1.0"}
+    try:
+        with httpx.Client(timeout=2.5) as client:
+            resp = client.get(url, params=params, headers=headers)
+            if resp.status_code == 200:
+                data = resp.json()
+                return data.get("display_name")
+    except Exception as exc:
+        logger.warning("Reverse geocoding failed for (%s, %s): %s", lat, lon, exc)
+    return None
+
