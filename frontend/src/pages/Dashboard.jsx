@@ -76,24 +76,42 @@ export default function Dashboard() {
       </div>
 
       {/* Filters */}
-      <div className="flex flex-wrap gap-3">
-        {[
-          { key: 'status', options: ['', 'reported', 'acknowledged', 'in_progress', 'resolved'], label: 'Status' },
-          { key: 'severity', options: ['', 'low', 'medium', 'high'], label: 'Severity' },
-        ].map(({ key, options, label }) => (
-          <select
-            key={key}
-            value={filters[key]}
-            onChange={e => setFilters(f => ({ ...f, [key]: e.target.value }))}
-            className="text-sm border border-gray-300 rounded-lg px-3 py-1.5 bg-white focus:outline-none focus:ring-2 focus:ring-brand-500"
-          >
-            <option value="">{label}: All</option>
-            {options.filter(Boolean).map(o => (
-              <option key={o} value={o}>{o.replace('_', ' ')}</option>
-            ))}
-          </select>
-        ))}
+      <div className="flex flex-wrap gap-3 items-center">
+        <select
+          value={filters.status}
+          onChange={e => setFilters(f => ({ ...f, status: e.target.value }))}
+          className="text-sm border border-gray-300 rounded-lg px-3 py-1.5 bg-white focus:outline-none focus:ring-2 focus:ring-brand-500 shadow-sm"
+        >
+          <option value="">Status: All</option>
+          <option value="reported">Reported</option>
+          <option value="acknowledged">Acknowledged</option>
+          <option value="in_progress">In Progress</option>
+          <option value="resolved">Resolved</option>
+        </select>
+
+        <select
+          value={filters.severity}
+          onChange={e => setFilters(f => ({ ...f, severity: e.target.value }))}
+          className="text-sm border border-gray-300 rounded-lg px-3 py-1.5 bg-white focus:outline-none focus:ring-2 focus:ring-brand-500 shadow-sm"
+        >
+          <option value="">Severity: All</option>
+          <option value="low">Low</option>
+          <option value="medium">Medium</option>
+          <option value="high">High</option>
+        </select>
+
+        <select
+          value={filters.zone}
+          onChange={e => setFilters(f => ({ ...f, zone: e.target.value }))}
+          className="text-sm border border-gray-300 rounded-lg px-3 py-1.5 bg-white focus:outline-none focus:ring-2 focus:ring-brand-500 shadow-sm"
+        >
+          <option value="">Zone: All</option>
+          {['MCD North', 'MCD South', 'MCD East', 'MCD West', 'PWD SW', 'General'].map(z => (
+            <option key={z} value={z}>{z}</option>
+          ))}
+        </select>
       </div>
+
 
       {/* Table */}
       <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
