@@ -1,7 +1,12 @@
 import axios from 'axios'
 
+const configuredApiUrl = import.meta.env.VITE_API_URL
+const apiBaseUrl = configuredApiUrl
+  ? `${configuredApiUrl.replace(/\/$/, '')}/api`
+  : '/api'
+
 const client = axios.create({
-  baseURL: '/api',
+  baseURL: apiBaseUrl,
   timeout: 30000,
 })
 
@@ -19,3 +24,5 @@ client.interceptors.response.use(
 )
 
 export default client
+
+export { apiBaseUrl }
