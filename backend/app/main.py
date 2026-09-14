@@ -55,6 +55,16 @@ app.mount("/uploads", StaticFiles(directory=settings.UPLOAD_DIR, check_dir=False
 app.include_router(potholes_router)
 
 
+@app.get("/")
+def root():
+    return {
+        "message": "OkDriver Pothole Detection API is running",
+        "docs_url": "/docs",
+        "health_check": "/health",
+    }
+
+
 @app.get("/health")
 def health():
     return {"status": "ok", "version": "1.0.0"}
+
