@@ -82,7 +82,7 @@ def run_detection(image_bytes: bytes, original_filename: str) -> dict:
     stem = Path(original_filename).stem
     annotated_filename = f"{stem}_{uuid.uuid4().hex[:8]}_annotated.jpg"
 
-    if not YOLO_AVAILABLE:
+    if settings.DEMO_MODE or not YOLO_AVAILABLE:
         # ── Mock mode (useful in CI / no-GPU environments) ──────────────────
         # Return a fake detection so the rest of the pipeline can be tested.
         mock_box = [w * 0.2, h * 0.3, w * 0.5, h * 0.6]

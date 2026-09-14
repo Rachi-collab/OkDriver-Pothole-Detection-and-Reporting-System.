@@ -7,6 +7,7 @@ class Settings(BaseSettings):
     ENVIRONMENT: str = "development"
     SECRET_KEY: str = "dev-secret-change-in-prod"
     ALLOWED_ORIGINS: list[str] = ["http://localhost:5173"]
+    DEMO_MODE: bool = False
 
     # Database
     DATABASE_URL: str = "postgresql://pothole_user:changeme@localhost:5432/pothole_db"
