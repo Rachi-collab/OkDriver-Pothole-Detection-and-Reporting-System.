@@ -14,7 +14,6 @@ from typing import Optional
 
 import cv2
 import numpy as np
-from PIL import Image
 
 from app.core.config import settings
 from app.models.pothole import Severity
