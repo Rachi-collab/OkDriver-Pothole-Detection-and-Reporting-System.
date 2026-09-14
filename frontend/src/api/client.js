@@ -1,16 +1,12 @@
 import axios from 'axios'
 
-const configuredApiUrl = import.meta.env.VITE_API_URL
-const apiBaseUrl = configuredApiUrl
-  ? `${configuredApiUrl.replace(/\/$/, '')}/api`
-  : '/api'
+const BASE_URL = 'https://okdriver-backend.onrender.com/api'
 
 const client = axios.create({
-  baseURL: apiBaseUrl,
+  baseURL: BASE_URL,
   timeout: 30000,
 })
 
-// Global error normalizer
 client.interceptors.response.use(
   (res) => res,
   (err) => {
@@ -24,5 +20,3 @@ client.interceptors.response.use(
 )
 
 export default client
-
-export { apiBaseUrl }
