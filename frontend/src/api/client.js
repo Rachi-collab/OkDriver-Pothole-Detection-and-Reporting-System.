@@ -1,6 +1,6 @@
 import axios from 'axios'
 
-const BASE_URL = 'https://okdriver-backend.onrender.com/api'
+const BASE_URL = import.meta.env.VITE_API_URL || '/api'
 
 const client = axios.create({
   baseURL: BASE_URL,
@@ -19,4 +19,6 @@ client.interceptors.response.use(
   }
 )
 
+export { BASE_URL }
 export default client
+

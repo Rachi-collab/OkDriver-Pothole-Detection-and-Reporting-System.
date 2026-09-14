@@ -1,4 +1,4 @@
-import client from './client'
+import client, { BASE_URL } from './client'
 
 export const detectPothole = (formData) =>
   client.post('/potholes/detect', formData, {
@@ -21,6 +21,7 @@ export const getExportCsvUrl = (params = {}) => {
   const query = new URLSearchParams(
     Object.fromEntries(Object.entries(params).filter(([, v]) => v))
   ).toString()
-  return `${apiBaseUrl}/potholes/export/csv${query ? '?' + query : ''}`
+  return `${BASE_URL}/potholes/export/csv${query ? '?' + query : ''}`
 }
+
 
