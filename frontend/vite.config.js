@@ -10,10 +10,9 @@ export default defineConfig({
         target: 'http://127.0.0.1:8000',
         changeOrigin: true,
       },
-      '/uploads': {
-        target: 'http://127.0.0.1:8000',
-        changeOrigin: true,
-      },
     },
+  },
+  define: {
+    'import.meta.env.VITE_API_URL': JSON.stringify('https://okdriver-backend.onrender.com'),
   },
 })
