@@ -111,9 +111,17 @@ def run_detection(image_bytes: bytes, original_filename: str) -> dict:
             "annotated_filename": annotated_filename,
         }
 
+    # Downscale for ultra-fast CPU inference if image is large
+    max_dim = max(h, w)
+    if max_dim > 1024:
+        scale = 1024.0 / max_dim
+        infer_img = cv2.resize(img_bgr, (int(w * scale), int(h * scale)))
+    else:
+        infer_img = img_bgr
+
     try:
         model = _get_model()
-        results = model(img_bgr, conf=0.35, verbose=False)
+        results = model(infer_img, conf=0.35, verbose=False)
     except Exception as err:
         logger.warning("YOLO model inference failed (%s) - falling back to mock detection", err)
         mock_box = [w * 0.2, h * 0.3, w * 0.5, h * 0.6]
@@ -126,16 +134,19 @@ def run_detection(image_bytes: bytes, original_filename: str) -> dict:
             "annotated_filename": annotated_filename,
         }
 
-
     boxes: list[list[float]] = []
     max_conf = 0.0
+    scale_x = w / infer_img.shape[1]
+    scale_y = h / infer_img.shape[0]
 
     for result in results:
         for box in result.boxes:
-            xyxy = box.xyxy[0].cpu().numpy().tolist()
+            b = box.xyxy[0].cpu().numpy().tolist()
+            scaled_box = [b[0] * scale_x, b[1] * scale_y, b[2] * scale_x, b[3] * scale_y]
             conf = float(box.conf[0])
-            boxes.append(xyxy)
+            boxes.append(scaled_box)
             max_conf = max(max_conf, conf)
+
 
     if not boxes:
         return {
