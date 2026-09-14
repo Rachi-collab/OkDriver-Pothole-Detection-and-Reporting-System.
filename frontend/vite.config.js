@@ -1,24 +1,15 @@
-import axios from 'axios'
+import { defineConfig } from 'vite'
+import react from '@vitejs/plugin-react'
 
-const BASE_URL = import.meta.env.VITE_API_URL
-  ? `${import.meta.env.VITE_API_URL}/api`
-  : '/api'
-
-const client = axios.create({
-  baseURL: BASE_URL,
-  timeout: 30000,
+export default defineConfig({
+  plugins: [react()],
+  server: {
+    port: 5173,
+    proxy: {
+      '/api': {
+        target: 'http://127.0.0.1:8000',
+        changeOrigin: true,
+      },
+    },
+  },
 })
-
-client.interceptors.response.use(
-  (res) => res,
-  (err) => {
-    const message =
-      err.response?.data?.detail ||
-      err.response?.data?.message ||
-      err.message ||
-      'Something went wrong'
-    return Promise.reject(new Error(message))
-  }
-)
-
-export default client
