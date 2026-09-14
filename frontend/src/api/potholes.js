@@ -1,5 +1,7 @@
 import client from './client'
 
+const BASE_URL = 'https://okdriver-backend.onrender.com/api'
+
 export const detectPothole = (formData) =>
   client.post('/potholes/detect', formData, {
     headers: { 'Content-Type': 'multipart/form-data' },
@@ -21,6 +23,5 @@ export const getExportCsvUrl = (params = {}) => {
   const query = new URLSearchParams(
     Object.fromEntries(Object.entries(params).filter(([, v]) => v))
   ).toString()
-  return `${apiBaseUrl}/potholes/export/csv${query ? '?' + query : ''}`
+  return `${BASE_URL}/potholes/export/csv${query ? '?' + query : ''}`
 }
-
