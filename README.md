@@ -2,6 +2,30 @@
 
 A full-stack web application that detects potholes from image/video input, captures GPS location, estimates severity, identifies the responsible civic authority (MCD/PWD), and auto-generates reports - all tracked on a live map dashboard.
 
+## How The Project Works
+
+The project has three main parts:
+
+- *Frontend:* React, Vite, Tailwind CSS, React Router, Leaflet, and Axios.
+- *Backend:* FastAPI with SQLAlchemy, image processing, YOLO inference, authority mapping, and email reporting.
+- *Database:* PostgreSQL for pothole reports, status, location, severity, and authority information.
+
+### Detection and Reporting Flow
+
+1. The user opens the Report page.
+2. The user selects a JPG, PNG, or WebP image.
+3. The user enters latitude and longitude or uses browser geolocation.
+4. The frontend sends the image and form fields as multipart form data to:
+   /api/potholes/detect
+5. The backend validates the file type and size.
+6. The image is saved in the upload directory.
+7. The detector runs YOLO inference.
+8. The result is classified as low, medium, or high severity based on the detected bounding-box area.
+9. The coordinates are mapped to a civic authority zone.
+10. The report is saved in PostgreSQL.
+11. An email task is queued if SMTP settings are configured.
+12. The frontend displays the result and links to the saved report.
+
 ## Tech Stack
 
 | Layer | Technology |
@@ -79,14 +103,5 @@ npm install
 npm run dev
 ```
 
-## How It Works
-
-1. User uploads an image via the dashboard
-2. Backend runs YOLOv8 inference → returns detections
-3. Severity is estimated from bounding-box-to-image area ratio
-4. Coordinates are reverse-mapped to the correct civic authority zone
-5. A report record is saved to PostgreSQL
-6. An email is dispatched to the authority's inbox
-7. The dashboard map pin updates in real time
 
 
