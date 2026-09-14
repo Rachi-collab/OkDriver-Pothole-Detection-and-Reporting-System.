@@ -1,4 +1,4 @@
-import client, { apiBaseUrl } from './client'
+import client from './client'
 
 export const detectPothole = (formData) =>
   client.post('/potholes/detect', formData, {
