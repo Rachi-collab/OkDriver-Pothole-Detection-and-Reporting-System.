@@ -18,23 +18,8 @@ from PIL import Image
 
 from app.core.config import settings
 from app.models.pothole import Severity
-import torch
 
 logger = logging.getLogger(__name__)
-
-
-
-# Fix for PyTorch 2.6+ default weights_only=True compatibility with Ultralytics checkpoints
-try:
-    _orig_torch_load = torch.load
-
-    def _patched_torch_load(*args, **kwargs):
-        kwargs.setdefault("weights_only", False)
-        return _orig_torch_load(*args, **kwargs)
-
-    torch.load = _patched_torch_load
-except Exception:
-    pass
 
 # Try to import ultralytics; fail gracefully so the app starts without GPU
 try:
@@ -42,13 +27,19 @@ try:
 
     _MODEL_PATH = os.getenv("YOLO_MODEL_PATH", "yolov8n.pt")
     _model: Optional[YOLO] = None
+    _model_load_failed = False
 
-
-    def _get_model() -> YOLO:
-        global _model
+    def _get_model() -> Optional[YOLO]:
+        global _model, _model_load_failed
+        if _model_load_failed:
+            return None
         if _model is None:
-            logger.info("Loading YOLO model from %s", _MODEL_PATH)
-            _model = YOLO(_MODEL_PATH)
+            try:
+                logger.info("Loading YOLO model from %s", _MODEL_PATH)
+                _model = YOLO(_MODEL_PATH)
+            except Exception:
+                _model_load_failed = True
+                logger.exception("Could not load YOLO model; using demo detection")
         return _model
 
     YOLO_AVAILABLE = True
@@ -98,7 +89,9 @@ def run_detection(image_bytes: bytes, original_filename: str) -> dict:
     stem = Path(original_filename).stem
     annotated_filename = f"{stem}_{uuid.uuid4().hex[:8]}_annotated.jpg"
 
-    if settings.DEMO_MODE or not YOLO_AVAILABLE:
+    model = _get_model() if YOLO_AVAILABLE and not settings.DEMO_MODE else None
+
+    if settings.DEMO_MODE or not YOLO_AVAILABLE or model is None:
         # ── Mock mode (useful in CI / no-GPU environments) ──────────────────
         # Return a fake detection so the rest of the pipeline can be tested.
         mock_box = [w * 0.2, h * 0.3, w * 0.5, h * 0.6]
@@ -111,42 +104,17 @@ def run_detection(image_bytes: bytes, original_filename: str) -> dict:
             "annotated_filename": annotated_filename,
         }
 
-    # Downscale for ultra-fast CPU inference if image is large
-    max_dim = max(h, w)
-    if max_dim > 1024:
-        scale = 1024.0 / max_dim
-        infer_img = cv2.resize(img_bgr, (int(w * scale), int(h * scale)))
-    else:
-        infer_img = img_bgr
-
-    try:
-        model = _get_model()
-        results = model(infer_img, conf=0.35, verbose=False)
-    except Exception as err:
-        logger.warning("YOLO model inference failed (%s) - falling back to mock detection", err)
-        mock_box = [w * 0.2, h * 0.3, w * 0.5, h * 0.6]
-        _save_annotated(img_bgr, [mock_box], annotated_filename)
-        return {
-            "pothole_detected": True,
-            "confidence": 0.75,
-            "severity": Severity.medium,
-            "bounding_boxes": [mock_box],
-            "annotated_filename": annotated_filename,
-        }
+    results = model(img_bgr, conf=0.35, verbose=False)
 
     boxes: list[list[float]] = []
     max_conf = 0.0
-    scale_x = w / infer_img.shape[1]
-    scale_y = h / infer_img.shape[0]
 
     for result in results:
         for box in result.boxes:
-            b = box.xyxy[0].cpu().numpy().tolist()
-            scaled_box = [b[0] * scale_x, b[1] * scale_y, b[2] * scale_x, b[3] * scale_y]
+            xyxy = box.xyxy[0].cpu().numpy().tolist()
             conf = float(box.conf[0])
-            boxes.append(scaled_box)
+            boxes.append(xyxy)
             max_conf = max(max_conf, conf)
-
 
     if not boxes:
         return {
