@@ -43,10 +43,12 @@ app = FastAPI(
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.ALLOWED_ORIGINS,
+    allow_origin_regex=r"http://(localhost|127\.0\.0\.1)(:\d+)?",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
 
 # Serve uploaded images as static files
 app.mount("/uploads", StaticFiles(directory=settings.UPLOAD_DIR, check_dir=False), name="uploads")
@@ -55,6 +57,16 @@ app.mount("/uploads", StaticFiles(directory=settings.UPLOAD_DIR, check_dir=False
 app.include_router(potholes_router)
 
 
+@app.get("/")
+def root():
+    return {
+        "message": "OkDriver Pothole Detection API is running",
+        "docs_url": "/docs",
+        "health_check": "/health",
+    }
+
+
 @app.get("/health")
 def health():
     return {"status": "ok", "version": "1.0.0"}
+

@@ -36,7 +36,9 @@ dist/
 backend/uploads/
 backend/runs/
 *.pt
+*.partial
 *.onnx
+
 
 # Docker
 *.log

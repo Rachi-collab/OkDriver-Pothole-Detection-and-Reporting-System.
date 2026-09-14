@@ -1,6 +1,4 @@
-import client from './client'
-
-const BASE_URL = 'https://okdriver-backend.onrender.com/api'
+import client, { BASE_URL } from './client'
 
 export const detectPothole = (formData) =>
   client.post('/potholes/detect', formData, {
@@ -25,3 +23,4 @@ export const getExportCsvUrl = (params = {}) => {
   ).toString()
   return `${BASE_URL}/potholes/export/csv${query ? '?' + query : ''}`
 }
+
